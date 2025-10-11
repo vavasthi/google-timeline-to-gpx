@@ -107,9 +107,13 @@ def printRteptList(name, rteptList):
 	print('</trkseg>\n</trk>\n')
 
 def printGpxList(name, gpxList):
-	minLat, maxLat, minLng, maxLng,ts = extractBounds(gpxList)
-	gpxStr = '<gpx version="1.0" creator="AvasthiConverter - https://www.indiabytheroad.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/0" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">\n<time>{ts}</time>\n<bounds minlat="{minlat}" minlon="{minlng}" maxlat="{maxlat}" maxlon="{maxlng}"/>\n<metadata>\n<name>{filename}</name>\n<author>\n<name>indiabytheroadconverter</name>\n<link href="https://www.indiabytheroad.com"/>\n</author>\n</metadata>'
-	print(gpxStr.format(filename=name, ts=ts.isoformat(), minlat=minLat, minlng=minLng, maxlat=maxLat, maxlng=maxLng))
+	minLat, maxLat, minLng, maxLng,ts,found = extractBounds(gpxList)
+	if found:
+		gpxStr = '<gpx version="1.0" creator="AvasthiConverter - https://www.indiabytheroad.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/0" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">\n<time>{ts}</time>\n<bounds minlat="{minlat}" minlon="{minlng}" maxlat="{maxlat}" maxlon="{maxlng}"/>\n<metadata>\n<name>{filename}</name>\n<author>\n<name>indiabytheroadconverter</name>\n<link href="https://www.indiabytheroad.com"/>\n</author>\n</metadata>'
+		print(gpxStr.format(filename=name, ts=ts.isoformat(), minlat=minLat, minlng=minLng, maxlat=maxLat, maxlng=maxLng))
+	else:
+		gpxStr = '<gpx version="1.0" creator="AvasthiConverter - https://www.indiabytheroad.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/0" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">\n<metadata>\n<name>{filename}</name>\n<author>\n<name>indiabytheroadconverter</name>\n<link href="https://www.indiabytheroad.com"/>\n</author>\n</metadata>'
+		print(gpxStr.format(filename=name))
 
 def extractBounds(gpxList):
 	lats = []
@@ -121,7 +125,10 @@ def extractBounds(gpxList):
 		lngs.append(gpx.startLng)
 		lngs.append(gpx.endLng)
 		tss.append(gpx.startTime)
-	return min(lats), max(lats), min(lngs), max(lngs), min(tss)
+	if len(lats) > 0 and len(lngs) > 0 and len(tss) > 0:
+		return min(lats), max(lats), min(lngs), max(lngs), min(tss), True
+	else:
+		return 0,0,0,0,0,False
 
 def traverseThroughFile(segment, wptList, rteptList, gpxList):
 	if 'visit' in segment:
